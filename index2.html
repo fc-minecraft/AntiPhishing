@@ -3,223 +3,176 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Обучение Фишингу</title>
+    <title>Обучение Фишингу Часть 1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f8fafc;
+        }
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            padding: 1.5rem;
-            color: #1f2937;
+            z-index: 50;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
         }
-        .container {
-            width: 100%;
-            max-width: 600px;
-            background-color: white;
-            border-radius: 1.5rem;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-            padding: 2.5rem;
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background: white;
+            padding: 2.6rem;
+            border-radius: 1.3rem;
+            box-shadow: 0 13px 26px rgba(0,0,0,0.26);
+            max-width: 90%;
+            width: 520px;
             text-align: center;
-            border: 1px solid #e2e8f0;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
         }
-        .btn {
-            font-weight: 600;
-            padding: 1rem 2.5rem;
-            border-radius: 9999px;
-            transition: background-color 0.2s;
-            cursor: pointer;
-            font-size: 1.5rem;
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
         }
-        .btn-primary {
-            background-color: #4f46e5;
-            color: white;
+        .modal-input {
+            width: 100%;
+            padding: 0.975rem;
+            border-radius: 0.65rem;
+            border: 1px solid #d1d5db;
+            margin-top: 1.3rem;
+            margin-bottom: 1.95rem;
+            outline: none;
+            transition: border-color 0.2s;
         }
-        .btn-primary:hover {
-            background-color: #4338ca;
-        }
-        .btn-secondary {
-            background-color: #e5e7eb;
-            color: #374151;
-            font-size: 1.5rem;
-        }
-        .btn-secondary:hover {
-            background-color: #d1d5db;
-        }
-        .scenario-card {
-            background-color: #f3f4f6;
-            padding: 1.5rem;
-            border-radius: 1rem;
-            border-left: 4px solid #6366f1;
-            text-align: left;
-            font-size: 1.5rem;
-            line-height: 1.6;
-        }
-        .hidden {
-            display: none;
-        }
-        .correct-answer {
-            color: #16a34a;
-            font-weight: 700;
-        }
-        .incorrect-answer {
-            color: #dc2626;
-            font-weight: 700;
+        .modal-input:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
         }
     </style>
 </head>
-<body class="bg-gray-50">
-    <div id="app-container" class="container">
-        <!-- Start Screen -->
-        <div id="start-screen">
-            <h1 class="text-3xl font-bold mb-4">Обучение Фишингу</h1>
-            <p class="mb-6 text-gray-600">
-                Узнай, как отличить фишинговые сайты. Пройди тест и проверь себя!
+<body class="bg-slate-100 flex items-center justify-center min-h-screen p-4">
+
+    <!-- Main game container -->
+    <div id="game-container" class="w-full max-w-2xl bg-white rounded-2xl shadow-xl p-8 flex flex-col items-center text-center">
+
+        <!-- Start screen -->
+        <div id="start-screen" class="space-y-6 transition-opacity duration-500 ease-in-out">
+            <h1 class="text-4xl font-bold text-slate-800 mb-4">Осторожно, фишинг! Часть 1.</h1>
+            <p class="text-lg text-slate-600">
+                Узнай, как отличить обман в сети. Проверь себя, будь внимателен!
             </p>
-            <button id="start-btn" class="btn btn-primary">Начать тест</button>
+            <button id="start-btn" class="bg-indigo-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-indigo-700 transition-colors duration-200">
+                Начать
+            </button>
         </div>
 
-        <!-- Game Screen -->
-        <div id="game-screen" class="hidden">
-            <div class="flex justify-between items-center mb-4 text-lg text-gray-500 font-medium">
-                <span id="progress-text">Вопрос 1/20</span>
+        <!-- Game screen -->
+        <div id="game-screen" class="hidden w-full space-y-6 text-left transition-opacity duration-500 ease-in-out">
+            <!-- Progress and score -->
+            <div class="flex justify-between items-center mb-4 text-slate-500 text-sm font-medium">
+                <span id="progress-text">Сценарий 1/21</span>
                 <span id="score-text">Очки: 0</span>
             </div>
-            <div id="scenario-card" class="scenario-card">
-                <p id="scenario-text" class="text-xl leading-relaxed"></p>
+
+            <!-- Scenario card -->
+            <div id="scenario-card" class="bg-gray-100 rounded-xl p-6 shadow-inner border-l-4 border-l-indigo-500 flex flex-col space-y-4">
+                <h2 id="scenario-title" class="text-2xl font-semibold text-slate-700"></h2>
+                <p id="scenario-text" class="text-slate-600 leading-relaxed"></p>
             </div>
+
+            <!-- Answer choices -->
             <div id="choices-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
                 <!-- Buttons will be added here via JS -->
             </div>
         </div>
 
-        <!-- Feedback Screen -->
-        <div id="feedback-screen" class="hidden">
-            <h2 id="feedback-title" class="text-2xl font-bold mb-4"></h2>
-            <p id="feedback-explanation" class="text-xl text-gray-600 mb-6"></p>
-            <button id="next-btn" class="btn btn-primary">Далее</button>
+        <!-- Feedback screen -->
+        <div id="feedback-screen" class="hidden text-center space-y-4 transition-opacity duration-500 ease-in-out">
+            <div id="feedback-icon" class="text-6xl mb-4"></div>
+            <h2 id="feedback-title" class="text-3xl font-bold mb-2"></h2>
+            <p id="feedback-explanation" class="text-slate-600 leading-relaxed"></p>
+            <button id="next-btn" class="bg-indigo-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-indigo-700 transition-colors duration-200">
+                Далее
+            </button>
         </div>
 
-        <!-- Results Screen -->
-        <div id="results-screen" class="hidden">
-            <h2 class="text-3xl font-bold mb-4">Тест завершен!</h2>
-            <div id="final-score" class="text-2xl font-bold mb-4"></div>
-            <p id="results-message" class="text-xl text-gray-600 mb-6"></p>
-            <button id="restart-btn" class="btn btn-primary">Начать заново</button>
+        <!-- Results screen -->
+        <div id="results-screen" class="hidden text-center space-y-6 transition-opacity duration-500 ease-in-out">
+            <h2 class="text-4xl font-bold text-slate-800">Завершено</h2>
+            <div id="final-score" class="text-2xl text-slate-700 font-semibold"></div>
+            <p id="results-message" class="text-lg text-slate-600"></p>
+            <button id="restart-btn" class="bg-indigo-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-indigo-700 transition-colors duration-200">
+                Начать заново
+            </button>
         </div>
+
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
 
+            // --- SCENARIO DATA ---
             const scenarios = [
                 {
-                    text: "Ты знаешь, что адрес сайта Roblox это <strong>roblox.com</strong>. Друг просит тебя перейти на <strong>my-roblox-online.ru</strong> и добавить его в друзья. Ты переходишь и видишь окно входа. Что ты будешь делать?",
+                    title: "Подозрительная ссылка",
+                    text: "Ты знаешь, что адрес сайта Roblox — <strong>roblox.com</strong>. Друг просит тебя перейти на <strong>my-roblox-online.ru</strong> и добавить его в друзья. Ты переходишь и видишь окно входа. Что ты будешь делать?",
                     isPhishing: true,
                     explanation: "Верно! Официальный сайт — <strong>roblox.com</strong>. Сайт с подозрительным адресом <strong>my-roblox-online.ru</strong> — это фишинг. Никогда не вводи свои данные на таких сайтах."
                 },
                 {
-                    text: "Ты хочешь найти в интернете игру от Roblox. Ты видишь ссылку <strong>roblox.com/games/best-game</strong>. Что ты будешь делать?",
+                    title: "Проверка адреса",
+                    text: "Тебе скинули ссылку на игру Roblox: <strong>https://www.roblox.com/games/75963928975799/BEST-GAME</strong>. Ты переходишь и видишь страницу игры. Что ты будешь делать?",
                     isPhishing: false,
-                    explanation: "Правильно! Ты заметил, что адрес начинается с <strong>roblox.com</strong>. Это настоящий сайт. Все, что идет после знака '/' просто ведет на другую страницу внутри сайта."
+                    explanation: "Правильно! Ты заметил, что адрес начинается с <strong>roblox.com</strong>. Это настоящий сайт. Все, что идет после <strong>.com/</strong> просто ведет на другую страницу внутри сайта."
                 },
                 {
+                    title: "Бесплатный скин",
                     text: "Тебе пришло сообщение от 'Minecraft' с предложением получить бесплатный скин. Ссылка: <strong>free-minecraft-skins.xyz</strong>. Что ты будешь делать?",
                     isPhishing: true,
                     explanation: "Это фишинг. Настоящий сайт Minecraft — <strong>minecraft.net</strong>. Любой другой адрес, предлагающий 'бесплатные' вещи, — это уловка."
                 },
                 {
-                    text: "Тебе прислали ссылку, чтобы посмотреть видео с котиками. Ты знаешь, что сайт YouTube это <strong>youtube.com</strong>. Друг просит тебя перейти на <strong>youtube-free.com</strong>. Что ты будешь делать?",
-                    isPhishing: true,
-                    explanation: "Это фишинг. Адрес <strong>youtube-free.com</strong> очень похож на настоящий, но слова 'free' (бесплатно) и необычный адрес указывают на обман."
-                },
-                {
-                    text: "Тебе прислали ссылку от друга, чтобы посмотреть видео с котиками. Ссылка: <strong>www.tiktok.com/cat-videos</strong>. Ты заметил, что адрес выглядит как <strong>ticcktok.com</strong>. Что ты будешь делать?",
+                    title: "Опечатка в адресе",
+                    text: "Тебе прислали ссылку от друга, чтобы посмотреть видео с котиками. Ссылка: <strong>www.tiktok.com/cat-videos</strong>. Но ты замечаешь, что адрес выглядит как <strong>ticcktok.com</strong>. Что ты будешь делать?",
                     isPhishing: true,
                     explanation: "Это фишинг. В адресе сайта есть опечатка: 'ticcktok' вместо 'tiktok'. Мошенники специально так делают, чтобы обмануть тебя."
                 },
                 {
-                    text: "Тебе прислали ссылку на новый сервер в Discord: <strong>discord.gg/gameserver</strong>. Что ты будешь делать?",
-                    isPhishing: false,
-                    explanation: "Это безопасно. Ссылка ведет на официальный домен <strong>discord.gg</strong>, который используется для приглашений на серверы. Можно смело переходить."
-                },
-                {
-                    text: "Тебе пришло сообщение от 'Instagram' о том, что твой аккаунт будет заблокирован, если ты не перейдешь по ссылке: <strong>instagram-help.co/login</strong>. Что ты будешь делать?",
-                    isPhishing: true,
-                    explanation: "Это фишинг. Настоящий сайт — <strong>instagram.com</strong>. Мошенники пытаются напугать тебя, чтобы ты поспешил и ввел свои данные."
-                },
-                {
-                    text: "Друг прислал ссылку на свою страницу в Facebook: <strong>facebook.com/friend-profile-123</strong>. Что ты будешь делать?",
-                    isPhishing: false,
-                    explanation: "Это безопасно. Ссылка ведет на официальный домен <strong>facebook.com</strong> и является обычной страницей профиля."
-                },
-                {
-                    text: "Тебе пришло письмо от 'Netflix' с сообщением о том, что твоя подписка истекла. Ссылка: <strong>netflix-account-update.com</strong>. Что ты будешь делать?",
-                    isPhishing: true,
-                    explanation: "Это фишинг. Настоящий сайт Netflix — <strong>netflix.com</strong>. Адрес <strong>netflix-account-update.com</strong> создан мошенниками, чтобы украсть твои данные."
-                },
-                {
-                    text: "Ты хочешь посмотреть новый мультфильм, ищешь в интернете 'Disney Plus' и переходишь по ссылке: <strong>disneyplus.com</strong>. Что ты будешь делать?",
-                    isPhishing: false,
-                    explanation: "Это безопасно. Ссылка ведет на официальный домен <strong>disneyplus.com</strong>, где размещены настоящие фильмы и мультфильмы. Ты набрал адрес сам, а не перешел по подозрительной ссылке."
-                },
-                {
-                    text: "Ты получил сообщение от 'Amazon', что ты выиграл подарочную карту. Ссылка: <strong>amazon.gifts.com/claim</strong>. Что ты будешь делать?",
-                    isPhishing: true,
-                    explanation: "Это фишинг. Настоящий сайт Amazon — <strong>amazon.com</strong>. Мошенники часто добавляют слова вроде 'gifts' или 'claim' в адрес, чтобы обмануть тебя."
-                },
-                {
-                    text: "Ты ищешь в Google 'YouTube' и переходишь по ссылке: <strong>youtube.com</strong>. Что ты будешь делать?",
+                    title: "Переход по ссылке",
+                    text: "Ты ищешь в Google 'YouTube' и переходишь по первой ссылке: <strong>youtube.com</strong>. Что ты будешь делать?",
                     isPhishing: false,
                     explanation: "Это безопасно. Это настоящий сайт YouTube, ты можешь смело заходить."
                 },
                 {
-                    text: "Ты получаешь сообщение от друга: 'Привет, я нашел новый секретный сайт с читами для игры! Заходи: <strong>gamecheats.online/free-coins</strong>'. Что ты будешь делать?",
-                    isPhishing: true,
-                    explanation: "Фишинг! Настоящие разработчики игр не распространяют читы. Подобные сайты созданы, чтобы украсть твои данные. Будь осторожен, когда тебе предлагают что-то 'бесплатное' или 'секретное'."
-                },
-                {
-                    text: "Тебе приходит письмо от 'Pinterest': 'Обновите ваш аккаунт, перейдя по этой ссылке: <strong>pinteres.com/update</strong>'. Что ты будешь делать?",
-                    isPhishing: true,
-                    explanation: "Фишинг! Посмотри внимательно на адрес: там написано 'pinteres.com', а не 'pinterest.com'. Мошенники специально делают маленькие ошибки, чтобы тебя обмануть."
-                },
-                {
-                    text: "Ты видишь рекламу 'самых дешевых билетов' на концерт. Ссылка ведет на <strong>concert-tickets.online</strong>. Что ты будешь делать?",
-                    isPhishing: true,
-                    explanation: "Фишинг! Настоящий сайт для покупки билетов будет иметь известный домен. Этот сайт, скорее всего, пытается украсть твои платежные данные. Всегда покупай билеты на официальных сайтах или у проверенных продавцов."
-                },
-                {
+                    title: "Сообщение от 'Gmail'",
                     text: "Ты получаешь сообщение от 'Gmail' с просьбой обновить настройки безопасности. Ссылка: <strong>google.com-settings/security</strong>. Что ты будешь делать?",
                     isPhishing: true,
-                    explanation: "Фишинг! Основной домен здесь 'com-settings', а 'google' — это просто его часть, чтобы запутать тебя. Настоящий сайт Google — <strong>google.com</strong>."
+                    explanation: "Фишинг! Основной домен здесь <strong>com-settings</strong>, а <strong>google</strong> — это просто его часть, чтобы запутать тебя. Настоящий сайт Google — <strong>google.com</strong>."
                 },
-                {
-                    text: "Тебе пришло письмо от 'Apple' о том, что твой аккаунт временно заблокирован. Ссылка: <strong>appleid.apple.com/account</strong>. Что ты будешь делать?",
-                    isPhishing: false,
-                    explanation: "Это безопасно. Ссылка ведет на официальный поддомен <strong>appleid.apple.com</strong>. Всегда проверяй, что основной домен — это <strong>apple.com</strong>."
-                },
-                {
+                 {
+                    title: "Всплывающее окно",
                     text: "Ты видишь всплывающее окно на сайте, где говорится: 'Твой компьютер заражен! Скачай этот антивирус бесплатно: <strong>secure-scan.com/download</strong>'. Что ты будешь делать?",
                     isPhishing: true,
                     explanation: "Фишинг! Это типичная ловушка. Никакие сайты не могут 'сканировать' твой компьютер. Они просто пытаются заставить тебя скачать вирус."
                 },
                 {
-                    text: "Тебе пришло письмо от 'PayPal': 'Твой аккаунт будет заблокирован, если ты не подтвердишь данные. Нажми сюда: <strong>paypal.com.account-verify.net</strong>'. Что ты будешь делать?",
-                    isPhishing: true,
-                    explanation: "Фишинг! Мошенники используют 'paypal.com' как часть поддомена, чтобы запутать. Настоящий домен — <strong>account-verify.net</strong>. Это обман."
+                    title: "Настоящий адрес",
+                    text: "Тебе пришло письмо от 'Apple' о том, что твой аккаунт временно заблокирован. Ссылка: <strong>appleid.apple.com/account</strong>. Что ты будешь делать?",
+                    isPhishing: false,
+                    explanation: "Это безопасно. Ссылка ведет на официальный поддомен <strong>appleid.apple.com</strong>. Всегда проверяй, что основной домен — это <strong>apple.com</strong>."
                 },
-                {
-                    text: "Тебе пришло сообщение от 'Twitch': 'Поздравляем! Ты выиграл 1000 подписчиков! Нажми: <strong>twitch.free-followers.com</strong>'. Что ты будешь делать?",
-                    isPhishing: true,
-                    explanation: "Фишинг! Основной домен — <strong>free-followers.com</strong>, а <strong>twitch</strong> используется, чтобы обмануть тебя. Twitch никогда не будет раздавать подписчиков таким способом."
-                }
             ];
 
-            // --- DOM ELEMENTS ---
+            // --- HTML Elements ---
             const startScreen = document.getElementById('start-screen');
             const gameScreen = document.getElementById('game-screen');
             const feedbackScreen = document.getElementById('feedback-screen');
@@ -228,24 +181,26 @@
             const startBtn = document.getElementById('start-btn');
             const nextBtn = document.getElementById('next-btn');
             const restartBtn = document.getElementById('restart-btn');
-
+            
             const progressText = document.getElementById('progress-text');
             const scoreText = document.getElementById('score-text');
+            const scenarioTitle = document.getElementById('scenario-title');
             const scenarioText = document.getElementById('scenario-text');
             const choicesContainer = document.getElementById('choices-container');
             
             const feedbackTitle = document.getElementById('feedback-title');
             const feedbackExplanation = document.getElementById('feedback-explanation');
-            
+            const feedbackIcon = document.getElementById('feedback-icon');
+
             const finalScore = document.getElementById('final-score');
             const resultsMessage = document.getElementById('results-message');
 
-            // --- GAME STATE ---
+            // --- Game State ---
             let currentScenarioIndex = 0;
             let score = 0;
             const totalScenarios = scenarios.length;
 
-            // --- FUNCTIONS ---
+            // --- Functions ---
             function showScreen(screen) {
                 const allScreens = [startScreen, gameScreen, feedbackScreen, resultsScreen];
                 allScreens.forEach(s => s.classList.add('hidden'));
@@ -266,44 +221,48 @@
 
                 const scenario = scenarios[currentScenarioIndex];
                 
-                progressText.textContent = `Вопрос ${currentScenarioIndex + 1}/${totalScenarios}`;
+                progressText.textContent = `Сценарий ${currentScenarioIndex + 1}/${totalScenarios}`;
                 scoreText.textContent = `Очки: ${score}`;
+                scenarioTitle.textContent = scenario.title;
                 scenarioText.innerHTML = scenario.text;
                 
                 choicesContainer.innerHTML = '';
                 
-                const safeBtn = document.createElement('button');
-                safeBtn.textContent = 'Это безопасно';
-                safeBtn.className = 'btn btn-secondary';
-                safeBtn.onclick = () => handleChoice(false);
-                
                 const phishingBtn = document.createElement('button');
                 phishingBtn.textContent = 'Это фишинг';
-                phishingBtn.className = 'btn btn-secondary';
-                phishingBtn.onclick = () => handleChoice(true);
+                phishingBtn.className = 'bg-indigo-200 text-indigo-800 font-medium py-3 px-6 rounded-lg shadow-md hover:bg-indigo-300 transition-colors duration-200 text-sm md:text-base';
+                phishingBtn.onclick = () => handleChoice(true, scenario.explanation);
+
+                const safeBtn = document.createElement('button');
+                safeBtn.textContent = 'Это безопасно';
+                safeBtn.className = 'bg-indigo-200 text-indigo-800 font-medium py-3 px-6 rounded-lg shadow-md hover:bg-indigo-300 transition-colors duration-200 text-sm md:text-base';
+                safeBtn.onclick = () => handleChoice(false, scenario.explanation);
                 
-                choicesContainer.appendChild(safeBtn);
-                choicesContainer.appendChild(phishingBtn);
+                if (currentScenarioIndex % 2 === 0) {
+                    choicesContainer.appendChild(phishingBtn);
+                    choicesContainer.appendChild(safeBtn);
+                } else {
+                    choicesContainer.appendChild(safeBtn);
+                    choicesContainer.appendChild(phishingBtn);
+                }
 
                 showScreen(gameScreen);
             }
 
-            function handleChoice(isUserChoicePhishing) {
+            function handleChoice(isUserChoicePhishing, explanation) {
                 const scenario = scenarios[currentScenarioIndex];
                 const isCorrect = (isUserChoicePhishing === scenario.isPhishing);
 
                 if (isCorrect) {
                     score++;
                     feedbackTitle.textContent = "Правильно!";
-                    feedbackTitle.classList.remove('incorrect-answer');
-                    feedbackTitle.classList.add('correct-answer');
+                    feedbackIcon.textContent = "👍";
                 } else {
                     feedbackTitle.textContent = "Неправильно!";
-                    feedbackTitle.classList.remove('correct-answer');
-                    feedbackTitle.classList.add('incorrect-answer');
+                    feedbackIcon.textContent = "👎";
                 }
                 
-                feedbackExplanation.innerHTML = scenario.explanation;
+                feedbackExplanation.innerHTML = explanation;
                 showScreen(feedbackScreen);
             }
 
@@ -326,7 +285,7 @@
                 showScreen(resultsScreen);
             }
 
-            // --- EVENT LISTENERS ---
+            // --- Event Listeners ---
             startBtn.addEventListener('click', startGame);
             nextBtn.addEventListener('click', nextScenario);
             restartBtn.addEventListener('click', startGame);
