@@ -136,9 +136,9 @@
             const scenarios = [
                 {
                     title: "Подозрительная ссылка",
-                    text: "Ты знаешь, что адрес сайта Roblox — <strong>roblox.com</strong>. Друг просит тебя перейти на <strong>my-roblox-online.ru</strong> и добавить его в друзья. Ты переходишь и видишь окно входа. Что ты будешь делать?",
+                    text: "Ты знаешь, что адрес сайта Roblox — <strong>roblox.com</strong>. Друг просит тебя перейти на <strong>my-roblox-online.xyz</strong> и добавить его в друзья. Ты переходишь и видишь окно входа. Что ты будешь делать?",
                     isPhishing: true,
-                    explanation: "Верно! Официальный сайт — <strong>roblox.com</strong>. Сайт с подозрительным адресом <strong>my-roblox-online.ru</strong> — это фишинг. Никогда не вводи свои данные на таких сайтах.",
+                    explanation: "Верно! Официальный сайт — <strong>roblox.com</strong>. Сайт с подозрительным адресом <strong>my-roblox-online.xyz</strong> — это фишинг. Никогда не вводи свои данные на таких сайтах.",
                     type: "choice"
                 },
                 {
@@ -171,9 +171,9 @@
                 },
                 {
                     title: "Сообщение от 'Gmail'",
-                    text: "Ты получаешь сообщение от 'Gmail' с просьбой обновить настройки безопасности. Ссылка: <strong>google.com-settings/security</strong>. Что ты будешь делать?",
+                    text: "Ты получаешь сообщение от 'Gmail' с просьбой обновить настройки безопасности. Ссылка: <strong>google-security-update.online/settings</strong>. Что ты будешь делать?",
                     isPhishing: true,
-                    explanation: "Фишинг! Основной домен здесь <strong>com-settings</strong>, а <strong>google</strong> — это просто его часть, чтобы запутать тебя. Настоящий сайт Google — <strong>google.com</strong>.",
+                    explanation: "Фишинг! Настоящий сайт Google — <strong>google.com</strong>. Домен <strong>google-security-update.online</strong> не имеет к нему никакого отношения, это подделка.",
                     type: "choice"
                 },
                 {
@@ -181,7 +181,9 @@
                     text: "Ты видишь всплывающее окно на сайте, где говорится: 'Твой компьютер заражен! Скачай этот антивирус бесплатно: <strong>secure-scan.com/download</strong>'. Это всплывающее окно. Что ты будешь делать?",
                     isPhishing: true,
                     explanation: "Фишинг! Это типичная ловушка. Никакие сайты не могут 'сканировать' твой компьютер. Они просто пытаются заставить тебя скачать вирус.",
-                    type: "popup"
+                    type: "popup",
+                    popupTitle: "Предупреждение!",
+                    popupText: "Твой компьютер заражен! Скачай этот антивирус бесплатно."
                 },
                 {
                     title: "Настоящий адрес",
@@ -190,8 +192,60 @@
                     explanation: "Это безопасно. Ссылка ведет на официальный поддомен <strong>appleid.apple.com</strong>. Всегда проверяй, что основной домен — это <strong>apple.com</strong>.",
                     type: "choice"
                 },
+                {
+                    title: "Бесплатные v-bucks",
+                    text: "Тебе пришло сообщение в Discord от 'Fortnite' с предложением получить бесплатные v-bucks. Ссылка: <strong>fortnite-free.net</strong>. Что ты будешь делать?",
+                    isPhishing: true,
+                    explanation: "Фишинг! Настоящий сайт Fortnite — <strong>fortnite.com</strong> или <strong>epicgames.com</strong>. Бесплатные v-bucks — это уловка.",
+                    type: "choice"
+                },
+                {
+                    title: "Сообщение от банка",
+                    text: "Ты получаешь СМС от 'Твой банк' о том, что твой счёт заблокирован. Ссылка: <strong>yourbank-security.net/verify-account</strong>. Но ты знаешь, что у тебя нет счёта. Что ты будешь делать?",
+                    isPhishing: true,
+                    explanation: "Это фишинг. Если у тебя нет счёта в банке, то это мошенники. Они пытаются получить твои данные.",
+                    type: "choice"
+                },
+                {
+                    title: "Подозрительное окно",
+                    text: "Ты видишь всплывающее окно на сайте, которое говорит: 'Поздравляем! Ты выиграл 1000 монет! Введи свои данные, чтобы получить приз!'. Что ты будешь делать?",
+                    isPhishing: true,
+                    explanation: "Это фишинг. Мошенники используют такие окна, чтобы получить твои данные. Настоящие призы так не раздают.",
+                    type: "popup",
+                    popupTitle: "Поздравляем!",
+                    popupText: "Ты выиграл 1000 монет! Введи свои данные, чтобы получить приз."
+                },
+                {
+                    title: "Сообщение от друга",
+                    text: "Тебе пришло сообщение от друга с просьбой скинуть ему свой пароль от аккаунта, чтобы 'посмотреть что-то'. Что ты будешь делать?",
+                    isPhishing: true,
+                    explanation: "Фишинг! Ни в коем случае не сообщай свой пароль даже самым близким друзьям. Их аккаунты могли взломать.",
+                    type: "choice"
+                },
+                {
+                    title: "Фальшивый сайт",
+                    text: "Тебе пришло сообщение от 'YouTube' с просьбой обновить настройки. Ссылка: <strong>youtube-support.com/update</strong>. Что ты будешь делать?",
+                    isPhishing: true,
+                    explanation: "Фишинг! Настоящий сайт YouTube — <strong>youtube.com</strong>. Любые другие домены — это подделка.",
+                    type: "choice"
+                },
+                {
+                    title: "Поддельный 'Discord'",
+                    text: "Тебе пришло сообщение от 'Discord' о том, что ты можешь получить бесплатную подписку 'Nitro'. Ссылка: <strong>discord-nitro-gift.com</strong>. Что ты будешь делать?",
+                    isPhishing: true,
+                    explanation: "Фишинг! Настоящий сайт Discord — <strong>discord.com</strong>. Не переходи по ссылкам с подозрительными доменами.",
+                    type: "choice"
+                },
+                {
+                    title: "Обновление браузера",
+                    text: "Ты видишь всплывающее окно на сайте, которое просит тебя скачать 'новое обновление браузера'. Что ты будешь делать?",
+                    isPhishing: true,
+                    explanation: "Это фишинг. Никогда не скачивай обновления из всплывающих окон. Обновления браузера устанавливаются автоматически.",
+                    type: "popup",
+                    popupTitle: "Обнови браузер!",
+                    popupText: "Твоя версия браузера устарела. Скачай новое обновление сейчас."
+                }
             ];
-
             // --- HTML Elements ---
             const startScreen = document.getElementById('start-screen');
             const gameScreen = document.getElementById('game-screen');
