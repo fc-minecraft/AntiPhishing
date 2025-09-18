@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест: Твоя роль в кибербезопасности</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .choice-btn:disabled {
+            background-color: #e5e7eb;
+            color: #9ca3af;
+            cursor: not-allowed;
+            /* opacity: 0.6;
+        }
+        .timer-bar {
+            height: 100%;
+            background-color: #4f46e5;
+            width: 100%;
+            transform-origin: left;
+            animation: shrink 10s linear forwards;
+            border-radius: 9999px;
+        }
+        @keyframes shrink {
+            from { transform: scaleX(1); }
+            to { transform: scaleX(0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 flex items-center justify-center min-h-screen p-4">
+
+    <div id="game-container" class="w-full max-w-2xl bg-white rounded-2xl shadow-xl p-8 flex flex-col items-center text-center">
+
+        <!-- Главный экран -->
+        <div id="start-screen" class="space-y-6 transition-opacity duration-500 ease-in-out">
+            <h1 class="text-4xl font-bold text-slate-800 mb-4">Привет, будущий герой кибербезопасности!</h1>
+            <p class="text-lg text-slate-600">
+                В цифровом мире есть свои защитники. Хочешь узнать, кем бы ты мог стать? Давай подберем тебе идеальную профессию! Ответь на 25 вопросов, и мы выясним твою суперсилу.
+            </p>
+            <button id="start-btn" class="bg-indigo-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-indigo-700 transition-colors duration-200">
+                Начать приключение
+            </button>
+        </div>
+
+        <!-- Игровой экран -->
+        <div id="game-screen" class="hidden w-full space-y-6 text-left transition-opacity duration-500 ease-in-out">
+            <div class="flex justify-between items-center mb-2 text-slate-500 text-sm font-medium">
+                <span id="progress-text">Вопрос 1/25</span>
+            </div>
+            <div id="timer-container" class="w-full bg-gray-200 rounded-full overflow-hidden h-1"></div>
+
+            <div id="scenario-card" class="bg-gray-100 rounded-xl p-6 shadow-inner border-l-4 border-l-indigo-500 flex flex-col space-y-4 mt-4">
+                <p id="scenario-text" class="text-slate-700 leading-relaxed text-lg"></p>
+            </div>
+
+            <div id="choices-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                <!-- Кнопки будут добавлены здесь с помощью JS -->
+            </div>
+        </div>
+        
+        <!-- Экран результатов -->
+        <div id="results-screen" class="hidden text-center space-y-6 transition-opacity duration-500 ease-in-out">
+            <h2 class="text-3xl font-bold text-slate-800">Твоя суперпрофессия:</h2>
+            <div id="result-profession-title" class="text-4xl text-indigo-600 font-bold"></div>
+            <p id="result-profession-description" class="text-lg text-slate-600 max-w-lg mx-auto text-left"></p>
+            <button id="restart-btn" class="bg-indigo-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-indigo-700 transition-colors duration-200">
+                Пройти еще раз
+            </button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            const professions = {
+                analyst: {
+                    title: "Аналитик кибербезопасности",
+                    description: "Представь, что ты — цифровой Шерлок Холмс! Когда в интернете происходит что-то загадочное, например, пропадает важная информация или появляется таинственный вирус, зовут именно тебя.<br><br>Ты, как настоящий сыщик, собираешь улики: изучаешь странные файлы, читаешь секретные записи и ищешь следы злоумышленников. Твоя суперсила — это внимание к мелочам. Ты замечаешь то, что другие пропускают, и можешь по одной маленькой детали распутать целый клубок тайн.<br><br>Тебе это подходит, потому что ты любишь разгадывать загадки, докапываться до сути и замечать то, чего не видят другие. Ты — мозг команды!"
+                },
+                pentester: {
+                    title: "Пентестер (Белый хакер)",
+                    description: "Ты — секретный агент в мире технологий! Крупные компании нанимают тебя, чтобы ты... попробовал их взломать! Но не по-настоящему, а для проверки. Твоя задача — найти все лазейки и слабые места в их цифровой крепости раньше, чем это сделают настоящие злодеи.<br><br>Ты используешь хитрость, нестандартное мышление и самые крутые программы, чтобы обойти защиту. Это как играть в прятки на высшем уровне! Ты всегда на шаг впереди, думаешь как противник, но делаешь мир безопаснее.<br><br>Тебе это подходит, потому что ты обожаешь приключения, любишь соревноваться и находить гениальные, необычные решения!"
+                },
+                incident_responder: {
+                    title: "Специалист по реагированию на инциденты",
+                    description: "Ты — капитан команды быстрого реагирования, настоящий спасатель цифрового мира! Когда случается беда — например, вирус захватывает компьютеры или хакеры начинают атаку — твой телефон звонит первым.<br><br>Ты не паникуешь, а четко и быстро собираешь свою команду и бросаешься в бой. Твоя задача — остановить атаку, выгнать злоумышленников и всё починить. Ты действуешь в самом центре событий, где важна каждая секунда. Это работа для смелых и решительных!<br><br>Тебе это подходит, потому что ты не боишься трудностей, умеешь работать в команде и чувствуешь себя героем, когда спасаешь положение!"
+                },
+                security_architect: {
+                    title: "Архитектор систем безопасности",
+                    description: "Ты — гениальный изобретатель и строитель неприступных цифровых городов! Пока другие сражаются с врагами, ты создаешь саму защиту. Ты придумываешь и строишь сложные системы безопасности с высокими стенами, хитрыми ловушками и надежными стражниками.<br><br>Ты думаешь на много шагов вперед, как гроссмейстер в шахматах, и предвидишь, откуда может прийти угроза. Твоя работа — сделать так, чтобы атаки даже не начинались. Ты рисуешь чертежи и создаешь настоящие шедевры защитного искусства.<br><br>Тебе это подходит, потому что у тебя богатое воображение, ты любишь планировать, создавать что-то большое и надежное с нуля!"
+                },
+                security_awareness: {
+                    title: "Специалист по киберграмотности",
+                    description: "Ты — настоящий наставник и защитник знаний в цифровом мире! Твоя суперсила — не только знать правила безопасности, но и уметь просто и интересно рассказывать о них другим. Ты как мудрый учитель, который помогает друзьям и родным не попадаться на уловки мошенников.<br><br>Ты создаешь увлекательные уроки, придумываешь обучающие игры и плакаты, чтобы все вокруг знали, как защитить свои пароли и личные данные. Благодаря тебе, люди становятся умнее и внимательнее, а у злоумышленников остается все меньше шансов.<br><br>Тебе это подходит, потому что ты любишь помогать, делиться знаниями и веришь, что лучшая защита — это знание!"
+                },
+                forensic_investigator: {
+                    title: "Цифровой криминалист",
+                    description: "Ты — детектив, который расследует преступления, совершенные в цифровом мире. Когда атака уже произошла, и злоумышленники замели следы, на сцену выходишь ты. Твоя работа — восстановить картину событий по мельчайшим цифровым 'отпечаткам пальцев'.<br><br>Ты умеешь восстанавливать удаленные файлы, анализировать взломанные устройства и находить доказательства, которые помогут поймать преступника. Это кропотливая работа, требующая терпения и логики, как в сборке сложнейшего пазла.<br><br>Тебе это подходит, потому что ты очень терпелив, обожаешь докапываться до истины и веришь, что ни одно цифровое преступление не должно остаться безнаказанным."
+                }
+            };
+
+            const questions = [
+                {
+                    text: "Если бы ты был героем в сказке, кем бы ты был?",
+                    choices: [
+                        { text: "Мудрецом, который разгадывает все загадки", scores: { analyst: 2, forensic_investigator: 1 } },
+                        { text: "Хитрым разведчиком, который находит тайные тропы", scores: { pentester: 2 } },
+                        { text: "Храбрым рыцарем, который защищает замок", scores: { incident_responder: 2 } },
+                        { text: "Королём, который строит и укрепляет своё королевство", scores: { security_architect: 2 } }
+                    ]
+                },
+                {
+                    text: "В компьютерной игре произошла ошибка. Что ты сделаешь?",
+                    choices: [
+                        { text: "Поищу в интернете, почему она могла случиться", scores: { analyst: 2 } },
+                        { text: "Попробую повторить её разными способами, чтобы найти слабое место", scores: { pentester: 2 } },
+                        { text: "Сразу перезапущу игру, чтобы быстрее исправить ситуацию", scores: { incident_responder: 2 } },
+                        { text: "Поищу, не было ли похожих ошибок раньше, чтобы понять причину", scores: { forensic_investigator: 2 } }
+                    ]
+                },
+                {
+                    text: "Какая игра тебе нравится больше?",
+                    choices: [
+                        { text: "Детектив, где нужно собирать улики", scores: { analyst: 1, forensic_investigator: 2 } },
+                        { text: "«Казаки-разбойники», где нужно и прятаться, и искать", scores: { pentester: 2 } },
+                        { text: "Командный спорт, где важна скорость и слаженность", scores: { incident_responder: 2 } },
+                        { text: "Стратегия, где нужно строить и развивать свой город", scores: { security_architect: 2 } }
+                    ]
+                },
+                {
+                    text: "Ты нашел чей-то потерянный дневник. Что сделаешь?",
+                    choices: [
+                        { text: "Попробую по записям найти владельца, не читая лишнего", scores: { forensic_investigator: 2, analyst: 1 } },
+                        { text: "Подумаю, как можно было бы его защитить, например, замком", scores: { security_architect: 2 } },
+                        { text: "Отнесу его учителю, это правильный поступок", scores: { incident_responder: 2, security_awareness: 1 } },
+                        { text: "Мне станет любопытно, какие секреты он скрывает", scores: { pentester: 2 } }
+                    ]
+                },
+                {
+                    text: "Что для тебя самое важное в команде?",
+                    choices: [
+                        { text: "Иметь четкий план действий для всех", scores: { security_architect: 2, security_awareness: 1 } },
+                        { text: "Возможность предлагать самые смелые и неожиданные идеи", scores: { pentester: 2 } },
+                        { text: "Чтобы все действовали быстро и помогали друг другу в трудную минуту", scores: { incident_responder: 2 } },
+                        { text: "Возможность спокойно работать над своей частью задачи", scores: { analyst: 2, forensic_investigator: 1 } }
+                    ]
+                },
+                {
+                    text: "Ты строишь замок из кубиков. Каким он будет?",
+                    choices: [
+                        { text: "С очень запутанными коридорами, чтобы враг заблудился", scores: { pentester: 1 } },
+                        { text: "С потайными ходами и ловушками", scores: { pentester: 2 } },
+                        { text: "Самым высоким и крепким, чтобы никто не сломал", scores: { incident_responder: 2, security_architect:1 } },
+                        { text: "С продуманной защитой: рвом, мостом и несколькими рядами стен", scores: { security_architect: 2 } }
+                    ]
+                },
+                {
+                    text: "Тебе нужно решить сложную задачу. Как ты поступишь?",
+                    choices: [
+                        { text: "Разделю ее на маленькие части и буду решать по порядку", scores: { analyst: 2, security_architect: 1 } },
+                        { text: "Попробую найти необычный, нестандартный способ решения", scores: { pentester: 2 } },
+                        { text: "Поищу похожие задачи, которые уже кто-то решал", scores: { forensic_investigator: 2, analyst:1 } },
+                        { text: "Сначала нарисую схему или план решения", scores: { security_architect: 2 } }
+                    ]
+                },
+                {
+                    text: "Какой фильм тебе интереснее смотреть?",
+                    choices: [
+                        { text: "Про детективов, которые расследуют запутанные дела", scores: { forensic_investigator: 2, analyst: 1 } },
+                        { text: "Про шпионов, которые используют крутые гаджеты", scores: { pentester: 2 } },
+                        { text: "Про команду спасателей во время стихийного бедствия", scores: { incident_responder: 2 } },
+                        { text: "Обучающий фильм о том, как устроен мир", scores: { security_awareness: 2 } }
+                    ]
+                },
+                {
+                    text: "На твоем компьютере появилась странная программа. Что сделаешь?",
+                    choices: [
+                        { text: "Попробую узнать о ней в интернете, не запуская ее", scores: { analyst: 2 } },
+                        { text: "Расскажу друзьям о такой программе, чтобы они были осторожны", scores: { security_awareness: 2, incident_responder: 1 } },
+                        { text: "Немедленно выключу интернет и позову на помощь взрослых", scores: { incident_responder: 2 } },
+                        { text: "Попробую удалить ее и проверить компьютер на вирусы", scores: { incident_responder: 1 } }
+                    ]
+                },
+                {
+                    text: "Что тебя больше всего радует?",
+                    choices: [
+                        { text: "Когда я докапываюсь до правды и всё становится понятно", scores: { analyst: 1, forensic_investigator: 2 } },
+                        { text: "Когда у меня получается просто объяснить что-то сложное", scores: { security_awareness: 2, analyst: 1 } },
+                        { text: "Когда я помогаю другу в сложной ситуации", scores: { incident_responder: 2, security_awareness: 1 } },
+                        { text: "Когда я создаю что-то новое и красивое с нуля", scores: { security_architect: 2 } }
+                    ]
+                },
+                {
+                    text: "Как ты относишься к правилам?",
+                    choices: [
+                        { text: "Правила помогают понять, как всё устроено", scores: { analyst: 2, security_architect: 1 } },
+                        { text: "Иногда интересно проверить, что будет, если их нарушить", scores: { pentester: 2 } },
+                        { text: "В опасной ситуации нужно действовать быстро, а не по правилам", scores: { incident_responder: 2 } },
+                        { text: "Лучше всего, когда я сам придумываю понятные правила для всех", scores: { security_architect: 2, security_awareness: 1 } }
+                    ]
+                },
+                {
+                    text: "Ты нашел на улице флешку. Что с ней сделаешь?",
+                    choices: [
+                        { text: "Осмотрю ее, но вставлять в компьютер не буду, это может быть опасно", scores: { analyst: 2 } },
+                        { text: "Мне интересно, что на ней, но сначала проверю ее на специальном компьютере", scores: { pentester: 2 } },
+                        { text: "Не буду трогать, вдруг на ней вирус. Расскажу взрослым о находке", scores: { incident_responder: 2 } },
+                        { text: "Отдам на экспертизу, чтобы узнать, откуда она и что внутри", scores: { forensic_investigator: 2 } }
+                    ]
+                },
+                {
+                    text: "Какой школьный предмет тебе ближе?",
+                    choices: [
+                        { text: "История, где нужно восстанавливать события прошлого", scores: { forensic_investigator: 2 } },
+                        { text: "Информатика, где можно экспериментировать", scores: { pentester: 2 } },
+                        { text: "Уроки о правилах поведения, где мы учимся безопасности", scores: { security_awareness: 2, security_architect: 1 } },
+                        { text: "Черчение, где нужно планировать и создавать", scores: { security_architect: 2 } }
+                    ]
+                },
+                {
+                    text: "Какую суперспособность ты бы выбрал?",
+                    choices: [
+                        { text: "Возможность видеть прошлое, чтобы знать причины событий", scores: { forensic_investigator: 2, analyst: 1 } },
+                        { text: "Становиться невидимым, чтобы проникать куда угодно", scores: { pentester: 2 } },
+                        { text: "Суперскорость, чтобы везде успевать", scores: { incident_responder: 2 } },
+                        { text: "Умение убеждать, чтобы все слушали мои советы", scores: { security_awareness: 2 } }
+                    ]
+                },
+                 {
+                    text: "Тебе подарили новый сложный конструктор. Твои действия?",
+                    choices: [
+                        { text: "Внимательно изучу инструкцию от начала до конца", scores: { analyst: 2 } },
+                        { text: "Начну собирать без инструкции, чтобы было интереснее", scores: { pentester: 2 } },
+                        { text: "Сначала разложу все детали по цветам и размерам, чтобы был порядок", scores: { security_architect: 2, forensic_investigator: 1 } },
+                        { text: "Соберу что-то своё, не по инструкции", scores: { pentester: 2 } }
+                    ]
+                },
+                {
+                    text: "В походе твоя команда заблудилась. Что ты будешь делать?",
+                    choices: [
+                        { text: "Попробую по следам определить, куда мы шли", scores: { forensic_investigator: 2 } },
+                        { text: "Полезу на самое высокое дерево, чтобы осмотреться", scores: { pentester: 2 } },
+                        { text: "Буду всех подбадривать и организую поиск дороги", scores: { incident_responder: 2 } },
+                        { text: "Предложу построить временный лагерь и разработать план поиска", scores: { security_architect: 2 } }
+                    ]
+                },
+                {
+                    text: "Как ты обычно принимаешь решения?",
+                    choices: [
+                        { text: "Долго думаю и взвешиваю все 'за' и 'против'", scores: { analyst: 2, security_architect: 1 } },
+                        { text: "Часто доверяю своей интуиции и пробую", scores: { pentester: 2 } },
+                        { text: "Быстро, особенно если времени мало", scores: { incident_responder: 2 } },
+                        { text: "Основываясь на прошлом опыте", scores: { forensic_investigator: 2 } }
+                    ]
+                },
+                {
+                    text: "Что такое 'защита' для тебя?",
+                    choices: [
+                        { text: "Чтобы все мои друзья знали правила безопасности", scores: { security_awareness: 2 } },
+                        { text: "Не иметь слабых мест, которые можно использовать", scores: { pentester: 2, security_architect: 1 } },
+                        { text: "Уметь быстро починить то, что сломалось", scores: { incident_responder: 2 } },
+                        { text: "Найти виновного и убедиться, что он больше не навредит", scores: { forensic_investigator: 2 } }
+                    ]
+                },
+                {
+                    text: "Тебе пришло сообщение 'Ты выиграл приз! Перейди по ссылке!'. Твои действия?",
+                    choices: [
+                        { text: "Подумаю, что это подозрительно, ведь я не участвовал в конкурсах", scores: { analyst: 2 } },
+                        { text: "Поищу в интернете, не писали ли другие о таком же сообщении", scores: { analyst: 2, security_awareness: 1 } },
+                        { text: "Сразу удалю это сообщение, это точно обман", scores: { incident_responder: 2 } },
+                        { text: "Сохраню его как доказательство, если это мошенники", scores: { forensic_investigator: 2 } }
+                    ]
+                },
+                {
+                    text: "Где тебе комфортнее всего работать?",
+                    choices: [
+                        { text: "В тихой библиотеке, изучая старые документы", scores: { analyst: 1, forensic_investigator: 2 } },
+                        { text: "В классе, где я объясняю что-то интересное у доски", scores: { security_awareness: 2 } },
+                        { text: "В центре событий, где постоянно что-то происходит", scores: { incident_responder: 2 } },
+                        { text: "За большим столом, где можно рисовать схемы и планы", scores: { security_architect: 2 } }
+                    ]
+                },
+                {
+                    text: "Что ты сделаешь, если увидишь, что кто-то в сети обижает другого?",
+                    choices: [
+                        { text: "Сделаю скриншоты как доказательство и расскажу взрослым", scores: { forensic_investigator: 2, incident_responder: 1 } },
+                        { text: "Напишу обидчику остроумный ответ, чтобы поставить его на место", scores: { pentester: 2 } },
+                        { text: "Немедленно заблокирую обидчика и пожалуюсь на него", scores: { incident_responder: 2 } },
+                        { text: "Попробую поговорить с ними и объяснить, почему так делать нельзя", scores: { security_awareness: 2 } }
+                    ]
+                },
+                {
+                    text: "Какая задача кажется тебе самой скучной?",
+                    choices: [
+                        { text: "Делать одно и то же много раз подряд", scores: { pentester: 2 } },
+                        { text: "Следовать строгой инструкции, не отклоняясь ни на шаг", scores: { pentester: 2 } },
+                        { text: "Сидеть и ждать, когда ничего не происходит", scores: { incident_responder: 2 } },
+                        { text: "Действовать без плана и подготовки", scores: { security_architect: 2, analyst: 1, forensic_investigator: 1 } }
+                    ]
+                },
+                {
+                    text: "Тебе нужно сохранить очень важный секрет. Как ты его спрячешь?",
+                    choices: [
+                        { text: "Зашифрую его так, чтобы никто не смог прочитать", scores: { analyst: 2 } },
+                        { text: "Спрячу его в самом неожиданном месте, где никто не будет искать", scores: { pentester: 2 } },
+                        { text: "Расскажу о нем только самым доверенным людям", scores: { incident_responder: 1, security_awareness: 1 } },
+                        { text: "Запишу его так, чтобы только я мог понять, что там написано", scores: { forensic_investigator: 2 } }
+                    ]
+                },
+                {
+                    text: "Ты смотришь на сложный механизм. Что тебе интереснее всего?",
+                    choices: [
+                        { text: "Как все шестеренки связаны друг с другом", scores: { analyst: 2, security_architect: 1 } },
+                        { text: "Можно ли его разобрать и собрать по-другому", scores: { pentester: 2 } },
+                        { text: "Как объяснить другому человеку, как он работает", scores: { security_awareness: 2, analyst: 1 } },
+                        { text: "Как он был сделан и какие инструменты для этого использовали", scores: { forensic_investigator: 2 } }
+                    ]
+                },
+                {
+                    text: "Что важнее для победы?",
+                    choices: [
+                        { text: "Знать все слабости противника", scores: { analyst: 1, pentester: 2 } },
+                        { text: "Чтобы все в команде знали, что делать", scores: { incident_responder: 1, security_awareness: 2 } },
+                        { text: "Действовать как одна слаженная команда", scores: { incident_responder: 2 } },
+                        { text: "Иметь отличный план с самого начала", scores: { security_architect: 2 } }
+                    ]
+                }
+            ];
+
+
+            const startScreen = document.getElementById('start-screen');
+            const gameScreen = document.getElementById('game-screen');
+            const resultsScreen = document.getElementById('results-screen');
+            const startBtn = document.getElementById('start-btn');
+            const restartBtn = document.getElementById('restart-btn');
+            
+            const progressText = document.getElementById('progress-text');
+            const scenarioText = document.getElementById('scenario-text');
+            const choicesContainer = document.getElementById('choices-container');
+            const timerContainer = document.getElementById('timer-container');
+            
+            const resultProfessionTitle = document.getElementById('result-profession-title');
+            const resultProfessionDescription = document.getElementById('result-profession-description');
+            
+            let currentQuestionIndex = 0;
+            let professionScores = {};
+            let questionTimeout;
+
+            function showScreen(screen) {
+                [startScreen, gameScreen, resultsScreen].forEach(s => s.classList.add('hidden'));
+                screen.classList.remove('hidden');
+            }
+
+            function startGame() {
+                currentQuestionIndex = 0;
+                professionScores = {
+                    analyst: 0,
+                    pentester: 0,
+                    incident_responder: 0,
+                    security_architect: 0,
+                    security_awareness: 0,
+                    forensic_investigator: 0
+                };
+                renderQuestion();
+            }
+
+            function renderQuestion() {
+                clearTimeout(questionTimeout);
+                if (currentQuestionIndex >= questions.length) {
+                    showResults();
+                    return;
+                }
+
+                showScreen(gameScreen);
+                const question = questions[currentQuestionIndex];
+                
+                progressText.textContent = `Вопрос ${currentQuestionIndex + 1}/${questions.length}`;
+                scenarioText.textContent = question.text;
+                
+                choicesContainer.innerHTML = '';
+                timerContainer.innerHTML = '<div class="timer-bar"></div>';
+                
+                const buttons = [];
+                question.choices.forEach(choice => {
+                    const button = document.createElement('button');
+                    button.textContent = choice.text;
+                    button.disabled = true;
+                    button.className = 'choice-btn bg-indigo-200 text-indigo-800 font-medium py-3 px-6 rounded-lg shadow-md hover:bg-indigo-300 transition-colors duration-200 text-sm md:text-base text-left';
+                    button.onclick = () => handleChoice(choice.scores);
+                    choicesContainer.appendChild(button);
+                    buttons.push(button);
+                });
+                
+                questionTimeout = setTimeout(() => {
+                    buttons.forEach(b => b.disabled = false);
+                    timerContainer.innerHTML = '';
+                }, 10000);
+
+            }
+
+            function handleChoice(scores) {
+                for (const prof in scores) {
+                    if (professionScores.hasOwnProperty(prof)) {
+                        professionScores[prof] += scores[prof];
+                    }
+                }
+                currentQuestionIndex++;
+                renderQuestion();
+            }
+
+            function showResults() {
+                let maxScore = -1;
+                let resultProfession = '';
+
+                for (const prof in professionScores) {
+                    if (professionScores[prof] > maxScore) {
+                        maxScore = professionScores[prof];
+                        resultProfession = prof;
+                    }
+                }
+
+                const result = professions[resultProfession];
+                resultProfessionTitle.textContent = result.title;
+                resultProfessionDescription.innerHTML = result.description;
+                
+                showScreen(resultsScreen);
+            }
+
+            startBtn.addEventListener('click', startGame);
+            restartBtn.addEventListener('click', startGame);
+        });
+    </script>
+</body>
+</html>
+
