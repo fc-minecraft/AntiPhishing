@@ -14,7 +14,7 @@
             background-color: #e5e7eb;
             color: #9ca3af;
             cursor: not-allowed;
-            /* opacity: 0.6;
+            /* opacity: 0.6; */ /* Убрал затемнение для лучшей читаемости */
         }
         .timer-bar {
             height: 100%;
@@ -32,8 +32,7 @@
 </head>
 <body class="bg-slate-100 flex items-center justify-center min-h-screen p-4">
 
-    <!-- Главный контейнер игры -->
-    <div id="game-container" class="w-full max-w-2xl bg-white rounded-2xl shadow-xl p-8 flex flex-col items-center text-center" style="transform: scale(1.6); transform-origin: center;">
+    <div id="game-container" class="w-full max-w-2xl bg-white rounded-2xl shadow-xl p-8 flex flex-col items-center text-center style="transform: scale(1.6);">
 
         <!-- Главный экран -->
         <div id="start-screen" class="space-y-6 transition-opacity duration-500 ease-in-out">
