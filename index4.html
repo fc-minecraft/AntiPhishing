@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест на знание паролей</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .input-field {
+            /* Увеличена высота (py-6) и размер шрифта (text-2xl) для удобства ввода */
+            @apply w-full py-6 px-6 border rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-200 text-2xl;
+        }
+        .input-field::placeholder {
+            color: #94a3b8; /* slate-400 */
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 flex items-center justify-center min-h-screen p-4">
+
+    <div id="game-container" class="w-full max-w-3xl bg-white rounded-2xl shadow-xl p-8 flex flex-col items-center text-center">
+
+        <div id="start-screen" class="space-y-6 w-full fade-in">
+            <h1 class="text-4xl font-bold text-slate-800">Крепость паролей</h1>
+            <p class="text-lg text-slate-600 max-w-xl mx-auto">
+                Узнай, как создавать надежные пароли. Тебя ждут 4 миссии!
+            </p>
+            <button id="start-btn" class="bg-indigo-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-indigo-700 transition-colors duration-200">Начать миссию</button>
+        </div>
+
+        <div id="game-screen" class="hidden w-full space-y-6 text-left">
+            <div class="flex justify-between items-center mb-4 text-slate-600 font-medium">
+                <span id="progress-text">Вопрос 1/40</span>
+                <span id="mission-text" class="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm font-semibold">Миссия 1</span>
+            </div>
+
+            <div id="question-card" class="bg-gray-100 rounded-xl p-6 shadow-inner border-l-4 border-l-indigo-500">
+                <p id="question-text" class="text-slate-700 text-lg leading-relaxed"></p>
+            </div>
+
+            <div id="answer-container" class="mt-6 w-full flex flex-col items-center"></div>
+
+            <div id="submit-btn-container" class="flex justify-end mt-6">
+                <button id="submit-btn" class="bg-indigo-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-indigo-700 transition-colors duration-200 opacity-50 cursor-not-allowed flex items-center" disabled>
+                    <span id="submit-btn-text">Ответить</span>
+                    <span id="timer-text" class="font-mono ml-2"></span>
+                </button>
+            </div>
+        </div>
+        
+        <div id="feedback-screen" class="hidden text-center space-y-4 w-full fade-in">
+            <div id="feedback-icon" class="text-6xl mb-4"></div>
+            <h2 id="feedback-title" class="text-3xl font-bold mb-2"></h2>
+            <p id="feedback-explanation" class="text-slate-600 leading-relaxed max-w-lg mx-auto"></p>
+            <button id="next-btn" class="bg-indigo-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-indigo-700 transition-colors duration-200 mt-4">
+                Далее
+            </button>
+        </div>
+
+        <div id="results-screen" class="hidden text-center space-y-6 fade-in">
+            <h2 class="text-4xl font-bold text-slate-800">Все миссии выполнены!</h2>
+            <div id="final-score" class="text-2xl text-slate-700 font-semibold"></div>
+            <p id="results-message" class="text-lg text-slate-600"></p>
+            <button id="restart-btn" class="bg-indigo-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-indigo-700 transition-colors duration-200">Начать заново</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const questions = [
+                 // Миссия 1: Тренировочный лагерь
+                { mission: 1, type: 'button', text: 'Для начала, введи в симулятор любой очень простой пароль из одного слова, например, "привет". Посмотри на его низкую оценку надежности и нажми "Готово".' },
+                { mission: 1, type: 'button', text: 'Введи пароль `qwerty`. Посмотри на красные и желтые карточки в разделе "Анализ". Теперь введи `Qwerty123!`. Понаблюдай, как карточки меняют цвет на зеленый. Как закончишь, нажми "Готово".' },
+                { mission: 1, type: 'mcq', text: 'Какой из этих паролей, скорее всего, получит оценку "Слишком простой..."?', options: ['R&d7K#p2', 'Super_password_2025', 'sun', 'gHj7fD3k'], answer: 'sun', explanation: 'Верно! Пароль `sun` очень короткий и состоит только из одного типа символов (строчные буквы), поэтому его легко подобрать.' },
+                { mission: 1, type: 'mcq', text: 'Введи пароль `зима`. Сколько "Типов символов" он содержит?', options: ['1', '2', '3', '4'], answer: '1', explanation: 'Правильно, только один тип: строчные буквы (кириллица).'},
+                { mission: 1, type: 'mcq', text: 'Теперь измени пароль `зима` на `Зима!`. Сколько "Типов символов" стало теперь?', options: ['1', '2', '3', '4'], answer: '3', explanation: 'Отлично! Теперь здесь три типа: заглавная буква, строчные буквы и специальный символ.'},
+                { mission: 1, type: 'mcq', text: 'Какой из этих паролей имеет БОЛЬШЕ всего "комбинаций"?', options: ['pass', 'p@sS', 'PASS', '1234'], answer: 'p@sS', explanation: 'Именно! Пароль `p@sS` использует три разных типа символов (строчные, заглавные, символы), что резко увеличивает количество возможных комбинаций по сравнению с другими.'},
+                { mission: 1, type: 'mcq', text: 'Пароль `Super` имеет длину 5 символов. Каким он станет, если добавить к нему `Man`?', options: ['Длиннее и надежнее.', 'Длиннее, но менее надежным.', 'Короче.', 'Ничего не изменится.'], answer: 'Длиннее и надежнее.', explanation: 'Точно! Увеличение длины — один из самых эффективных способов сделать пароль надежнее.'},
+                { mission: 1, type: 'mcq', text: 'Введи пароль `пароль`. Посмотри на "Время подбора". Теперь введи `ghjkm`. Время подбора увеличилось или уменьшилось?', options: ['Увеличилось', 'Уменьшилось', 'Не изменилось', 'Стало бесконечным'], answer: 'Увеличилось', explanation: 'Да! Хотя оба пароля — просто набор букв, `ghjkm` — это случайный набор, а `пароль` — словарное слово, которое подбирается почти мгновенно.'},
+                { mission: 1, type: 'button', text: 'Попробуй ввести в поле для пароля самый длинный пароль, какой сможешь придумать, используя слова из любимой песни или игры. Посмотри, какую оценку надежности он получит.' },
+                { mission: 1, type: 'mcq', text: 'Что важнее для надежности пароля?', options: ['Только большая длина.', 'Только использование символов `!@#`.', 'Чтобы он был красивым.', 'Сочетание длины и разных типов символов.'], answer: 'Сочетание длины и разных типов символов.', explanation: 'Золотые слова! Идеальный пароль — это баланс между достаточной длиной и разнообразием используемых символов.'},
+                
+                // Миссия 2: Лаборатория генератора
+                { mission: 2, type: 'input', text: 'С помощью генератора создай самый короткий пароль (длина 4). Скопируй его сюда.', explanation: 'Генератор может создавать даже короткие пароли, но они, как правило, не очень надежны.' },
+                { mission: 2, type: 'button', text: 'Установи в генераторе длину 12. По очереди убирай и добавляй галочки ("Цифры", "Символы" и т.д.), каждый раз нажимая "Создать". Посмотри, как меняются пароли.' },
+                { mission: 2, type: 'input', text: 'Сгенерируй пароль длиной 8, используя только "Заглавные буквы" и "Символы". Вставь результат.', explanation: 'Иногда для регистрации на сайтах требуются пароли с определенным набором символов. Генератор помогает справиться с этой задачей.'},
+                { mission: 2, type: 'mcq', text: 'Тебе нужен пароль для Wi-Fi, но твой старый телефон не поддерживает символы `!@#`. Какую галочку нужно убрать в генераторе?', options: ['Строчные буквы (a-z)', 'Заглавные буквы (A-Z)', 'Цифры (0-9)', 'Символы (!@#$)'], answer: 'Символы (!@#$)', explanation: 'Именно так. Гибкость генератора позволяет создавать пароли, подходящие под любые требования.'},
+                { mission: 2, type: 'input', text: 'Какую минимальную длину нужно выставить в генераторе (со всеми галочками), чтобы оценка надежности стала "Очень надежный!"?', explanation: 'Как видишь, для высокой надежности нужна не только сложность, но и достаточная длина.'},
+                { mission: 2, type: 'button', text: 'Установи максимальную длину пароля (20) и все галочки. Нажми "Создать надежный пароль" 5 раз подряд. Посмотри, насколько разными получаются пароли.' },
+                { mission: 2, type: 'input', text: 'Сгенерируй пароль длиной 15, но без цифр. Вставь результат.', explanation: 'Отлично! Ты научился гибко управлять параметрами генератора.' },
+                { mission: 2, type: 'mcq', text: 'Ты сгенерировал пароль `fT5!pL9s`. Какие опции (галочки) были включены в генераторе?', options: ['Все четыре.', 'Только буквы и цифры.', 'Только буквы и символы.', 'Только цифры и символы.'], answer: 'Все четыре.', explanation: 'Верно! В пароле есть строчные (f, p, s), заглавные (T, L), цифры (5, 9) и символ (!).'},
+                { mission: 2, type: 'button', text: 'Представь, что создаешь пароль для замка от сокровищницы. Используй генератор, чтобы создать самый сложный пароль, какой только сможешь. Полюбуйся им и нажми "Готово".' },
+                { mission: 2, type: 'mcq', text: 'Сгенерируй пароль длиной 12 со всеми опциями. Теперь вручную измени в нем одну букву на другую (например, `a` на `z`). Количество комбинаций изменилось?', options: ['Да', 'Нет', 'Увеличилось вдвое', 'Уменьшилось вдвое'], answer: 'Нет', explanation: 'Правильно! Количество комбинаций зависит от длины пароля и набора используемых символов (алфавита), а не от конкретных символов.' },
+
+                // Миссия 3: Симуляция хакерской атаки
+                { mission: 3, type: 'button', text: 'Введи пароль `1` и нажми "Начать подбор пароля". Он найдется мгновенно. Теперь попробуй `12`. Тоже быстро. А теперь `123`. Заметь, что время подбора хоть немного, но увеличивается.' },
+                { mission: 3, type: 'input', text: 'Введи пароль `hi`. Запусти подбор и дождись результата. Сколько попыток понадобилось симулятору?', explanation: 'Даже для такого короткого пароля уже требуется перебрать сотни вариантов!'},
+                { mission: 3, type: 'mcq', text: 'Какой пароль симулятор будет подбирать дольше?', options: ['999', 'abc', 'a1B', '@@@'], answer: 'a1B', explanation: 'Верно! Пароль `a1B` использует 3 разных типа символов, и "алфавит" для перебора у него самый большой, поэтому и времени на подбор уйдет больше.'},
+                { mission: 3, type: 'button', text: 'Введи пароль `hack`. Запусти подбор. Пока он идет, попробуй нажать "Остановить". Это сработало! В реальной жизни атаку так просто не остановить.' },
+                { mission: 3, type: 'input', text: 'Введи пароль `CPU`. Запусти подбор. Теперь введи пароль `cpu` (маленькими буквами) и тоже запусти подбор. Какой пароль был найден быстрее?', explanation: 'Обычно пароли в нижнем регистре подбираются быстрее, так как это более частый случай. Но все зависит от алгоритма перебора.'},
+                { mission: 3, type: 'mcq', text: 'Почему "Время подбора пароля" на твоем компьютере может отличаться от времени на компьютере друга, даже если пароль один и тот же?', options: ['Из-за разной версии Windows.', 'Из-за разной мощности (производительности) компьютеров.', 'Из-за разного времени суток.', 'Это случайность.'], answer: 'Из-за разной мощности (производительности) компьютеров.', explanation: 'Именно так! Чем мощнее процессор, тем больше паролей в секунду он может проверить, и тем быстрее произойдет взлом.'},
+                { mission: 3, type: 'button', text: 'Найди в разделе "Время подбора пароля" строчку "Производительность: ...". Это скорость, с которой твой компьютер может "думать". Просто ознакомься с ней.' },
+                { mission: 3, type: 'input', text: 'Введи пароль, который подбирается примерно за 1-5 секунд. Напиши его сюда.', explanation: 'Ты начинаешь чувствовать, как длина и сложность влияют на время взлома!'},
+                { mission: 3, type: 'button', text: 'Введи пароль `a` и посмотри на "Количество комбинаций". Теперь введи `а` (русскую) и сравни. Число комбинаций будет одинаковым, потому что симулятор учитывает оба алфавита.' },
+                { mission: 3, type: 'input', text: 'Придумай пароль из 4 разных символов (например, `F!5b`). Запусти подбор и напиши, сколько времени он занял.', explanation: 'Даже 4 символа, но разных типов, уже заставляют симулятор потрудиться!'},
+
+                // Миссия 4: Эксперт кибербезопасности
+                { mission: 4, type: 'input', text: 'Создай пароль-акроним. Возьми строчку из песни, например, "В лесу родилась ёлочка", и составь пароль из первых букв: `Влрё`. Преврати его в надежный, добавив цифры и символы. Напиши, что получилось.', explanation: 'Отличная техника! Акронимы помогают создавать сложные, но запоминающиеся пароли.'},
+                { mission: 4, type: 'mcq', text: 'Твой друг использует пароль `Password123`. Что ему посоветовать?', options: ['Отличный пароль, ничего не меняй.', 'Срочно сменить, так как он очень популярный и предсказуемый.', 'Добавить в конце `!`.', 'Написать его на стикере и приклеить к монитору.'], answer: 'Срочно сменить, так как он очень популярный и предсказуемый.', explanation: 'Правильный совет! Такие пароли, как `Password123` или `qwerty12345`, входят в топ самых популярных и взламываются в первую очередь.'},
+                { mission: 4, type: 'button', text: '"Проверь на прочность" пароль `CyberNinja2077!`. Введи его в симулятор и изучи все его показатели: длину, типы символов, оценку надежности и время подбора.' },
+                { mission: 4, type: 'input', text: 'Придумай пароль, который легко запомнить тебе, но сложно угадать другим. Например, объединив два несвязанных слова: `ЗеленыйБегемот77`. Напиши свой вариант.', explanation: 'Это прекрасный метод! Такие пароли-фразы длинные, их легко запомнить, но почти невозможно угадать.'},
+                { mission: 4, type: 'mcq', text: 'Какое действие НЕ делает пароль надежнее?', options: ['Увеличение длины.', 'Добавление заглавных букв.', 'Использование своего дня рождения в пароле.', 'Добавление специальных символов.'], answer: 'Использование своего дня рождения в пароле.', explanation: 'Именно! Использование личной информации (имена, даты рождения) — большая ошибка, ведь злоумышленники проверяют ее в первую очередь.'},
+                { mission: 4, type: 'input', text: 'Создай пароль, у которого 4 типа символов, но при этом оценка надежности "Средняя". Что это за пароль?', explanation: 'Это доказывает, что даже при использовании всех типов символов очень важна длина пароля. Короткий пароль всегда будет слабым.'},
+                { mission: 4, type: 'button', text: 'Сгенерируй пароль длиной 12. Попробуй придумать для него смешную или странную фразу, чтобы его запомнить. Например, для `h7&Kj9!f` — "Хомяк 7 раз укусил Енота за хвост!". Когда придумаешь, жми "Готово".' },
+                { mission: 4, type: 'mcq', text: 'Если хакер узнал, что твой пароль состоит только из 8 маленьких английских букв, как это ему поможет?', options: ['Никак не поможет.', 'Он сможет сильно сузить перебор, исключив цифры, символы и большие буквы.', 'Он сможет угадать пароль с первой попытки.', 'Его компьютер начнет работать быстрее.'], answer: 'Он сможет сильно сузить перебор, исключив цифры, символы и большие буквы.', explanation: 'Именно! Зная состав пароля, хакер может отбросить миллиарды ненужных комбинаций и сосредоточиться только на подходящих, что сильно ускоряет взлом.'},
+                { mission: 4, type: 'input', text: 'Создай в симуляторе пароль, который выглядит как шум (`%aG5(f!D`), но который ты сможешь запомнить. Напиши его.', explanation: 'Это высший пилотаж! Умение создавать и запоминать такие пароли — ключ к настоящей безопасности.'},
+                { mission: 4, type: 'button', text: 'Ты прошел все миссии! Теперь ты знаешь, как создавать крепости, а не дырявые заборы для своих аккаунтов. Поздравляю, агент!', finalButton: 'Я молодец!' }
+            ];
+
+            const COOLDOWN = 1;
+            
+            let currentQuestionIndex = 0;
+            let score = 0;
+            let selectedAnswer = null;
+            let countdownInterval = null;
+
+            const startScreen = document.getElementById('start-screen');
+            const gameScreen = document.getElementById('game-screen');
+            const feedbackScreen = document.getElementById('feedback-screen');
+            const resultsScreen = document.getElementById('results-screen');
+            const startBtn = document.getElementById('start-btn');
+            const restartBtn = document.getElementById('restart-btn');
+            const nextBtn = document.getElementById('next-btn');
+            
+            const submitBtn = document.getElementById('submit-btn');
+            const submitBtnContainer = document.getElementById('submit-btn-container');
+            const timerText = document.getElementById('timer-text');
+            
+            const feedbackIcon = document.getElementById('feedback-icon');
+            const feedbackTitle = document.getElementById('feedback-title');
+            const feedbackExplanation = document.getElementById('feedback-explanation');
+
+
+            function showScreen(screenToShow) {
+                [startScreen, gameScreen, resultsScreen, feedbackScreen].forEach(screen => {
+                    screen.classList.add('hidden');
+                });
+                screenToShow.classList.remove('hidden');
+            }
+
+            function startGame() {
+                currentQuestionIndex = 0;
+                score = 0;
+                renderQuestion();
+            }
+
+            function renderQuestion() {
+                showScreen(gameScreen);
+                
+                selectedAnswer = null;
+                const question = questions[currentQuestionIndex];
+                
+                document.getElementById('progress-text').textContent = `Вопрос ${currentQuestionIndex + 1}/${questions.length}`;
+                document.getElementById('mission-text').textContent = `Миссия ${question.mission}`;
+                document.getElementById('question-text').innerHTML = question.text;
+                
+                const answerContainer = document.getElementById('answer-container');
+                answerContainer.innerHTML = '';
+
+                switch (question.type) {
+                    case 'input':
+                        submitBtnContainer.classList.remove('hidden');
+                        
+                        const inputWrapper = document.createElement('div');
+                        /* Убрал фон (bg-slate-100) и лишние стили, чтобы поле не выглядело как "окно" */
+                        inputWrapper.className = 'w-full flex flex-col items-start';
+                        
+                        const label = document.createElement('label');
+                        label.textContent = 'Твой ответ:';
+                        label.className = 'text-slate-700 font-semibold mb-3 text-xl';
+                        inputWrapper.appendChild(label);
+
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.className = 'input-field w-full';
+                        input.placeholder = 'Напиши свой ответ здесь';
+                        inputWrapper.appendChild(input);
+
+                        answerContainer.appendChild(inputWrapper);
+                        
+                        input.addEventListener('input', () => selectedAnswer = input.value);
+                        startCooldown([submitBtn], timerText);
+                        break;
+                    case 'mcq':
+                        submitBtnContainer.classList.add('hidden');
+                        const optionsGrid = document.createElement('div');
+                        optionsGrid.className = 'grid grid-cols-1 md:grid-cols-2 gap-4 w-full';
+                                                
+                        const choiceButtons = [];
+
+                        question.options.forEach(option => {
+                            const button = document.createElement('button');
+                            button.innerHTML = option;
+                            button.className = 'bg-indigo-200 text-indigo-800 font-medium py-3 px-6 rounded-lg shadow-md hover:bg-indigo-300 transition-colors duration-200 text-sm md:text-base text-left';
+                            button.dataset.option = option;
+                            
+                            button.addEventListener('click', () => {
+                                if(button.disabled) return;
+                                selectedAnswer = option;
+                                processAnswer();
+                            });
+                            optionsGrid.appendChild(button);
+                            choiceButtons.push(button);
+                        });
+                        answerContainer.appendChild(optionsGrid);
+                        startCooldown(choiceButtons);
+                        break;
+                    case 'button':
+                        submitBtnContainer.classList.add('hidden');
+                        const actionBtn = document.createElement('button');
+                        actionBtn.className = 'bg-indigo-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-indigo-700 transition-colors duration-200 mx-auto flex items-center';
+                        
+                        const btnTextSpan = document.createElement('span');
+                        btnTextSpan.textContent = question.finalButton || 'Готово';
+                        actionBtn.appendChild(btnTextSpan);
+
+                        const btnTimerSpan = document.createElement('span');
+                        btnTimerSpan.className = 'font-mono ml-2';
+                        actionBtn.appendChild(btnTimerSpan);
+                        
+                        actionBtn.addEventListener('click', () => {
+                            if(actionBtn.disabled) return;
+                            selectedAnswer = 'done';
+                            processAnswer();
+                        });
+
+                        answerContainer.appendChild(actionBtn);
+                        startCooldown([actionBtn], btnTimerSpan);
+                        break;
+                }
+            }
+            
+            function showFeedback(isCorrect, explanation) {
+                if(isCorrect) {
+                    feedbackTitle.textContent = "Правильно!";
+                    feedbackIcon.textContent = "👍";
+                    feedbackTitle.className = "text-3xl font-bold mb-2 text-green-600";
+                } else {
+                    feedbackTitle.textContent = "Неправильно!";
+                    feedbackIcon.textContent = "👎";
+                    feedbackTitle.className = "text-3xl font-bold mb-2 text-red-600";
+                }
+                feedbackExplanation.innerHTML = explanation;
+                showScreen(feedbackScreen);
+            }
+
+            function startCooldown(buttons, mainTimerElement = null) {
+                clearInterval(countdownInterval);
+                let timeLeft = COOLDOWN;
+                
+                buttons.forEach(button => {
+                    button.disabled = true;
+                    button.classList.add('opacity-50', 'cursor-not-allowed');
+                });
+
+                const updateTimers = () => {
+                    const timerContent = `(${timeLeft}с)`;
+                    if (mainTimerElement) {
+                        mainTimerElement.textContent = timerContent;
+                    } 
+                };
+
+                updateTimers();
+
+                countdownInterval = setInterval(() => {
+                    timeLeft--;
+                    updateTimers();
+                    if (timeLeft <= 0) {
+                        clearInterval(countdownInterval);
+                        buttons.forEach(button => {
+                            button.disabled = false;
+                            button.classList.remove('opacity-50', 'cursor-not-allowed');
+                        });
+                        if (mainTimerElement) {
+                             mainTimerElement.textContent = '';
+                        }
+                    }
+                }, 1000);
+            }
+            
+            function processAnswer() {
+                clearInterval(countdownInterval);
+                const question = questions[currentQuestionIndex];
+                
+                if (question.type === 'button') {
+                    score++;
+                    advanceQuestion();
+                    return;
+                }
+
+                let isCorrect = false;
+
+                if (question.type === 'mcq' && selectedAnswer === question.answer) {
+                    isCorrect = true;
+                } else if (question.type === 'input') {
+                    if (question.answer) { 
+                        if(selectedAnswer && selectedAnswer.toLowerCase().trim() === question.answer.toLowerCase().trim()) {
+                            isCorrect = true;
+                        }
+                    } else { 
+                        isCorrect = true;
+                    }
+                }
+
+                if(isCorrect) {
+                    score++;
+                }
+                
+                const explanation = question.explanation || (isCorrect ? "Отличная работа!" : "Попробуй еще раз, изучив подсказку.");
+                showFeedback(isCorrect, explanation);
+            }
+
+            function advanceQuestion() {
+                currentQuestionIndex++;
+                if (currentQuestionIndex >= questions.length) {
+                    showResults();
+                } else {
+                    const card = document.getElementById('game-screen');
+                    card.classList.remove('fade-in');
+                    setTimeout(() => {
+                        renderQuestion();
+                        card.classList.add('fade-in');
+                    }, 200);
+                }
+            }
+
+            function showResults() {
+                showScreen(resultsScreen);
+                const percentage = Math.round((score / questions.length) * 100);
+                finalScore.textContent = `Твой результат: ${score} из ${questions.length} (${percentage}%)`;
+                
+                let message = "";
+                if (percentage >= 90) {
+                    message = "Великолепно! Ты — настоящий эксперт по кибербезопасности!";
+                } else if (percentage >= 70) {
+                    message = "Отличная работа! Твои знания на высоте.";
+                } else if (percentage >= 50) {
+                    message = "Хороший результат! Ты много знаешь, но есть к чему стремиться.";
+                } else {
+                    message = "Неплохое начало! Продолжай изучать тему, и у тебя все получится.";
+                }
+                resultsMessage.textContent = message;
+            }
+
+            startBtn.addEventListener('click', startGame);
+            restartBtn.addEventListener('click', startGame);
+            submitBtn.addEventListener('click', processAnswer);
+            nextBtn.addEventListener('click', advanceQuestion);
+        });
+    </script>
+</body>
+</html>
+
